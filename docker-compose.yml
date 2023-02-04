@@ -49,7 +49,7 @@ services:
     expose:
       - 3724
     ports:
-      - ${CMANGOS-REALMD-PORT:-3724}:3724
+      - ${CMANGOS_REALMD_PORT:-3724}:3724
     volumes:
       - ./${WOW_VER:-tbc}/logs:/home/cmangos/cmangos-server/logs
       - ./${WOW_VER:-tbc}/etc:/home/cmangos/cmangos-server/etc
@@ -67,9 +67,9 @@ services:
       - 3443
       - 7878
     ports:
-      - ${CMANGOS-MANGOSD-PORT:-8085}:8085
-      - ${CMANGOS-MANGOSD-REMOTE-CONSOLE-PORT:-3443}:3443
-      - ${CMANGOS-MANGOSD-SOAP-PORT:-7878}:7878
+      - ${CMANGOS_MANGOSD_PORT:-8085}:8085
+      - ${CMANGOS_MANGOSD_REMOTE_CONSOLE_PORT:-3443}:3443
+      - ${CMANGOS_MANGOSD_SOAP_PORT:-7878}:7878
     volumes:
       - ./${WOW_VER:-tbc}/logs:/home/cmangos/cmangos-server/logs
       - ./${WOW_VER:-tbc}/etc:/home/cmangos/cmangos-server/etc

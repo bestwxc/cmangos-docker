@@ -1,0 +1,86 @@
+version: "3.9"
+
+x-networks: &networks
+  networks:
+    - cmangos-network
+
+x-cmangos-shared-conf: &cmangos-shared-conf
+  <<: *networks
+  depends_on:
+    cmangos-database:
+      condition: service_healthy
+    cmangos-db-import:
+      condition: service_completed_successfully
+
+services:
+  cmangos-database:
+    <<: *networks
+    image: mysql:8.0
+    restart: unless-stopped
+    expose:
+      - 3306
+    ports:
+      - ${DOCKER_DB_EXTERNAL_PORT:-23306}:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DOCKER_DB_ROOT_PASSWORD:-123456}
+    volumes:
+      - type: volume
+        source: cmangos-db
+        target: /var/lib/mysql
+    healthcheck:
+      test: "/usr/bin/mysql --user=root --password=$$MYSQL_ROOT_PASSWORD --execute \"SHOW DATABASES;\""
+      interval: 2s
+      timeout: 40s
+      retries: 20
+  cmangos-db-import:
+    <<: *networks
+    depends_on:
+      cmangos-database:
+        condition: service_healthy
+    image: wxc252/cmangos-db-${WOW_VER:-tbc}:${CMANGOS_IMAGE_VER:-20230205}
+    command:
+      - echo 1
+  cmangos-realmd:
+    <<: *cmangos-shared-conf
+    #profiles:
+    #- dev
+    image: wxc252/cmangos-without-maps-${WOW_VER:-tbc}:${CMANGOS_IMAGE_VER:-20230205}
+    restart: unless-stopped
+    expose:
+      - 3724
+    ports:
+      - ${CMANGOS-REALMD-PORT:-3724}:3724
+    volumes:
+      - ./${WOW_VER:-tbc}/logs:/home/cmangos/cmangos-server/logs
+      - ./${WOW_VER:-tbc}/etc:/home/cmangos/cmangos-server/etc
+  cmangos-mangosd:
+    <<: *cmangos-shared-conf
+    #profiles:
+      #- dev
+    image: wxc252/cmangos-with-maps-${WOW_VER:-tbc}:${CMANGOS_IMAGE_VER:-20230205}
+    # use when you want to use yours.
+    # image: wxc252/cmangos-without-maps-${WOW_VER:-tbc}:${CMANGOS_IMAGE_VER:-20230205}
+    restart: unless-stopped
+    tty: true
+    expose:
+      - 8085
+      - 3443
+      - 7878
+    ports:
+      - ${CMANGOS-MANGOSD-PORT:-8085}:8085
+      - ${CMANGOS-MANGOSD-REMOTE-CONSOLE-PORT:-3443}:3443
+      - ${CMANGOS-MANGOSD-SOAP-PORT:-7878}:7878
+    volumes:
+      - ./${WOW_VER:-tbc}/logs:/home/cmangos/cmangos-server/logs
+      - ./${WOW_VER:-tbc}/etc:/home/cmangos/cmangos-server/etc
+      # mount the map files when you want to use yours.
+      #- ./${WOW_VER:-tbc}/data:/home/cmangos/cmangos-server/data
+
+volumes:
+  cmangos-db:
+
+networks:
+  cmangos-network:
+
+
+

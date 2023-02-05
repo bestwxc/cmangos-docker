@@ -17,6 +17,8 @@ services:
     <<: *networks
     image: mysql:8.0
     restart: unless-stopped
+    cap_add:
+      - SYS_NICE  # CAP_SYS_NICE
     expose:
       - 3306
     ports:
@@ -53,6 +55,7 @@ services:
     working_dir: /home/cmangos
     entrypoint: "./cmangos-server/bin/realmd -c ./cmangos-server/etc/realmd.conf"
     restart: unless-stopped
+    user: cmangos
     expose:
       - 3724
     ports:
@@ -71,6 +74,11 @@ services:
     # image: wxc252/cmangos-without-maps-${WOW_VER:-tbc}:${CMANGOS_IMAGE_VER:-20230205}
     restart: unless-stopped
     tty: true
+    stdin_open: true
+    cap_add:
+      - SYS_NICE
+    privileged: true
+    user: cmangos
     expose:
       - 8085
       - 3443

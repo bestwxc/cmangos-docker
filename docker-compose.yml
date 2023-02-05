@@ -38,13 +38,20 @@ services:
       cmangos-database:
         condition: service_healthy
     image: wxc252/cmangos-db-${WOW_VER:-tbc}:${CMANGOS_IMAGE_VER:-20230205}
+    tty: true
+    volumes:
+      - ./db-import:/db-import
     command:
-      - echo 1
+      - "/bin/bash"
+      - "/db-import/import.sh"
+#    entrypoint: "tail -f /etc/profile"
   cmangos-realmd:
     <<: *cmangos-shared-conf
     #profiles:
     #- dev
     image: wxc252/cmangos-without-maps-${WOW_VER:-tbc}:${CMANGOS_IMAGE_VER:-20230205}
+    working_dir: /home/cmangos
+    entrypoint: "./cmangos-server/bin/realmd -c ./cmangos-server/etc/realmd.conf"
     restart: unless-stopped
     expose:
       - 3724
@@ -58,6 +65,8 @@ services:
     #profiles:
       #- dev
     image: wxc252/cmangos-with-maps-${WOW_VER:-tbc}:${CMANGOS_IMAGE_VER:-20230205}
+    working_dir: /home/cmangos
+    entrypoint: "./cmangos-server/bin/mangosd -c ./cmangos-server/etc/mangosd.conf"
     # use when you want to use yours.
     # image: wxc252/cmangos-without-maps-${WOW_VER:-tbc}:${CMANGOS_IMAGE_VER:-20230205}
     restart: unless-stopped
